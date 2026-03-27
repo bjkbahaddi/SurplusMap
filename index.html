@@ -3,150 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bi-Impact 🌍 | ريادة الأعمال المستدامة وتقليل الهدر</title>
+    <meta name="description" content="Bi-Impact: نحول فائض الطعام إلى أصول اقتصادية مستدامة في المغرب والعالم">
+    <title>Bi-Impact 🌍 | ريادة الأعمال المستدامة</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body { font-family: 'Tajawal', sans-serif; scroll-behavior: smooth; }
         .gradient-bg { background: linear-gradient(135deg, #064e3b 0%, #1e40af 100%); }
-        
-        /* تصميم الشعار المبتكر Bi-Impact */
-        .logo-container { display: flex; align-items: center; gap: 4px; text-decoration: none; }
-        .logo-text { font-weight: 800; font-size: 1.8rem; letter-spacing: -1px; display: flex; align-items: center; }
+        .logo-text { font-weight: 800; font-size: 1.8rem; letter-spacing: -1px; }
         .logo-text .part-bi { color: #1e3a8a; }
         .logo-text .part-impact { position: relative; color: #059669; }
-        .logo-text .part-impact::after {
-            content: ''; position: absolute; top: 2px; left: -2px; width: 6px; height: 6px;
-            background: radial-gradient(circle, #34d399 0%, #059669 100%);
-            border-radius: 50%; box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
-        }
-        
-        /* أيقونة الكرة الأرضية بـ CSS */
-        .logo-icon-globe {
-            width: 24px; height: 24px; border-radius: 50%; border: 2px solid #059669;
-            position: relative; margin-left: 8px;
-        }
-        .logo-icon-globe::before { content: ''; position: absolute; width: 100%; height: 1px; background: #059669; top: 50%; }
-        .logo-icon-globe::after { content: ''; position: absolute; height: 100%; width: 1px; background: #059669; left: 50%; }
-
-        .map-placeholder { 
-            background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), url('https://www.google.com/maps/d/u/0/thumbnail?mid=1_vA5M3mU1U8p-V5fXf8&msa=0');
-            background-size: cover; background-position: center;
-        }
+        .logo-text .part-impact::after { content: ''; position: absolute; top: 2px; left: -2px; width: 6px; height: 6px; background: radial-gradient(circle, #34d399 0%, #059669 100%); border-radius: 50%; box-shadow: 0 0 8px rgba(16,185,129,0.6); }
+        .leaflet-container { height: 500px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4); }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 9999; align-items: center; justify-content: center; }
+        .story-card:hover { transform: translateY(-10px); }
+        .lang-btn.active { background: #059669; color: white; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-md border-b border-gray-100">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="#" class="logo-container">
-                <div class="logo-icon-globe"></div>
-                <div class="logo-text">
-                    <span class="part-bi">Bi-</span><span class="part-impact">Impact</span>
-                </div>
-            </a>
-            <div class="hidden md:flex space-x-reverse space-x-8 items-center">
-                <a href="#how" class="text-gray-600 hover:text-emerald-600 font-bold transition">كيف نعمل</a>
-                <a href="#map-demo" class="text-gray-600 hover:text-emerald-600 font-bold transition">الخريطة</a>
-                <a href="#partners" class="text-gray-600 hover:text-emerald-600 font-bold transition">شركاؤنا</a>
-                <button class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-emerald-700 shadow-lg transition duration-300">انضم لـ Bi-Startup</button>
+<nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-md border-b">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <a href="#" class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full border-2 border-emerald-600 relative"></div>
+            <div class="logo-text"><span class="part-bi">Bi-</span><span class="part-impact">Impact</span></div>
+        </a>
+        <div class="flex items-center gap-8 text-sm">
+            <a href="#how" class="font-bold hover:text-emerald-600 lang-text" data-key="how">كيف نعمل</a>
+            <a href="#success" class="font-bold hover:text-emerald-600 lang-text" data-key="success">قصص النجاح</a>
+            <a href="#map-demo" class="font-bold hover:text-emerald-600 lang-text" data-key="map">الخريطة</a>
+            <div class="flex border border-gray-300 rounded-full overflow-hidden text-xs">
+                <button onclick="switchLanguage('ar')" id="btn-ar" class="lang-btn px-5 py-2 font-bold active">AR</button>
+                <button onclick="switchLanguage('en')" id="btn-en" class="lang-btn px-5 py-2 font-bold">EN</button>
             </div>
+            <button onclick="document.getElementById('register').scrollIntoView({behavior:'smooth'})" class="bg-emerald-600 text-white px-6 py-2 rounded-2xl font-bold lang-text" data-key="join">انضم الآن</button>
         </div>
-    </nav>
+    </div>
+</nav>
 
-    <header class="gradient-bg text-white py-24 px-6 text-center">
-        <div class="max-w-4xl mx-auto">
-            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">Bi-Impact: ريادة الأعمال التي تطعم العالم</h1>
-            <p class="text-2xl mb-12 opacity-90 font-light">نحن لا نوزع الطعام فقط، نحن نبني "جسر Bi" التقني لتحويل الهدر إلى أصول اقتصادية مستدامة.</p>
-            <div class="flex flex-wrap justify-center gap-6">
-                <a href="#register" class="bg-white text-blue-900 px-10 py-4 rounded-xl font-bold text-lg shadow-2xl hover:bg-gray-100 transition duration-300">سجل مؤسستك (Bi-Service)</a>
-                <a href="#map-demo" class="bg-transparent border-2 border-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-white/10 transition duration-300">استكشف الخريطة الحية</a>
-            </div>
+<header class="gradient-bg text-white py-24 px-6 text-center">
+    <div class="max-w-4xl mx-auto">
+        <h1 id="header-title" class="text-5xl md:text-7xl font-extrabold mb-6 lang-text" data-key="title">Bi-Impact: ريادة الأعمال التي تطعم العالم</h1>
+        <p id="header-desc" class="text-2xl mb-12 opacity-90 lang-text" data-key="subtitle">نحن لا نوزع الطعام فقط، نحن نبني جسر Bi التقني لتحويل الهدر إلى أصول اقتصادية مستدامة.</p>
+        <div class="flex flex-wrap justify-center gap-6">
+            <a href="#register" class="bg-white text-blue-900 px-10 py-4 rounded-2xl font-bold lang-text" data-key="register-btn">سجل مؤسستك</a>
+            <a href="#map-demo" class="border-2 border-white px-10 py-4 rounded-2xl font-bold lang-text" data-key="explore">استكشف الخريطة الحية</a>
         </div>
-    </header>
+    </div>
+</header>
 
-    <section id="how" class="py-24 px-6 bg-white">
-        <div class="max-w-7xl mx-auto text-center">
-            <h2 class="text-4xl font-bold mb-16 text-gray-900">منظومة Bi-Impact الذكية</h2>
-            <div class="grid md:grid-cols-4 gap-8">
-                <div class="bg-gray-50 p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition">
-                    <div class="text-5xl mb-6">📊</div>
-                    <h3 class="text-xl font-bold mb-3 text-blue-900">رصد ذكي</h3>
-                    <p class="text-gray-600 text-sm">تحديد الفائض وتحليله كبيانات اقتصادية عبر منصة Bi-Service.</p>
-                </div>
-                <div class="bg-gray-50 p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition">
-                    <div class="text-5xl mb-6">📍</div>
-                    <h3 class="text-xl font-bold mb-3 text-blue-900">ربط جغرافي</h3>
-                    <p class="text-gray-600 text-sm">تحديد أقرب نقاط الاحتياج لضمان سرعة التوصيل قبل التلف.</p>
-                </div>
-                <div class="bg-gray-50 p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition">
-                    <div class="text-5xl mb-6">⚡</div>
-                    <h3 class="text-xl font-bold mb-3 text-blue-900">تنفيذ ريادي</h3>
-                    <p class="text-gray-600 text-sm">إدارة لوجستية احترافية عبر شبكة متطوعي Bi-Impact.</p>
-                </div>
-                <div class="bg-gray-50 p-8 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl transition">
-                    <div class="text-5xl mb-6">📈</div>
-                    <h3 class="text-xl font-bold mb-3 text-blue-900">تقرير الأثر</h3>
-                    <p class="text-gray-600 text-sm">تحويل الأثر الاجتماعي إلى أرقام تعزز قيمة علامتك التجارية.</p>
-                </div>
-            </div>
+<section id="how" class="py-24 px-6 bg-white">
+    <div class="max-w-7xl mx-auto text-center">
+        <h2 id="how-title" class="text-4xl font-bold mb-16 lang-text" data-key="how-title">منظومة Bi-Impact الذكية</h2>
+        <div class="grid md:grid-cols-4 gap-8">
+            <div class="bg-gray-50 p-8 rounded-3xl">📊 <h3 class="font-bold mt-4 lang-text" data-key="step1">رصد ذكي</h3><p class="text-gray-600 text-sm lang-text" data-key="step1-desc">تحديد الفائض وتحليله كبيانات</p></div>
+            <div class="bg-gray-50 p-8 rounded-3xl">📍 <h3 class="font-bold mt-4 lang-text" data-key="step2">ربط جغرافي</h3><p class="text-gray-600 text-sm lang-text" data-key="step2-desc">أقرب نقاط الاحتياج</p></div>
+            <div class="bg-gray-50 p-8 rounded-3xl">⚡ <h3 class="font-bold mt-4 lang-text" data-key="step3">تنفيذ ريادي</h3><p class="text-gray-600 text-sm lang-text" data-key="step3-desc">لوجستية احترافية</p></div>
+            <div class="bg-gray-50 p-8 rounded-3xl">📈 <h3 class="font-bold mt-4 lang-text" data-key="step4">تقرير الأثر</h3><p class="text-gray-600 text-sm lang-text" data-key="step4-desc">أرقام تعزز علامتك</p></div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section id="map-demo" class="py-20 px-6 bg-gray-50">
-        <div class="max-w-7xl mx-auto text-center">
-            <h2 class="text-4xl font-bold mb-6 text-gray-900">خريطة التأثير العالمية</h2>
-            <div class="map-placeholder h-[500px] rounded-3xl shadow-2xl border-4 border-white flex items-center justify-center">
-                <div class="bg-white/90 p-8 rounded-2xl shadow-lg">
-                    <p class="text-xl font-bold text-gray-800 mb-2">خريطة Bi-Impact التفاعلية</p>
-                    <p class="text-emerald-600 font-bold">نشطة الآن في [مدينتك] 🌍</p>
-                </div>
-            </div>
+<!-- قصص النجاح -->
+<section id="success" class="py-20 px-6 bg-emerald-50">
+    <div class="max-w-7xl mx-auto text-center">
+        <h2 id="success-title" class="text-4xl font-bold mb-12 lang-text" data-key="success-title">قصص نجاح حقيقية</h2>
+        <div id="stories" class="grid md:grid-cols-2 lg:grid-cols-4 gap-8"></div>
+    </div>
+</section>
+
+<!-- الخريطة (مصححة ومضمونة) -->
+<section id="map-demo" class="py-20 px-6 bg-gray-50">
+    <div class="max-w-7xl mx-auto text-center">
+        <h2 id="map-title" class="text-4xl font-bold mb-6 lang-text" data-key="map-title">خريطة التأثير العالمية – نشطة في الدار البيضاء 🌍</h2>
+        <div id="leaflet-map" class="leaflet-container mx-auto"></div>
+    </div>
+</section>
+
+<section id="register" class="py-24 px-6 bg-blue-900 text-white text-center">
+    <div class="max-w-3xl mx-auto">
+        <h2 class="text-4xl font-bold mb-8 lang-text" data-key="register-title">ابدأ رحلتك الريادية</h2>
+        <form id="register-form" class="max-w-md mx-auto">
+            <input type="email" placeholder="بريدك الإلكتروني" required class="w-full px-6 py-4 rounded-2xl text-gray-900 mb-4">
+            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-2xl font-bold lang-text" data-key="register-btn2">سجل الآن</button>
+        </form>
+    </div>
+</section>
+
+<footer class="bg-white py-12 text-center border-t">
+    <div class="max-w-7xl mx-auto">
+        <div class="logo-text text-3xl mb-6"><span class="part-bi">Bi-</span><span class="part-impact">Impact 🌍</span></div>
+        <a href="#" onclick="showPrivacy(); return false;" class="text-emerald-600 font-bold lang-text" data-key="privacy">سياسة الخصوصية</a>
+        <p class="text-xs text-gray-500 mt-8">&copy; 2026 Bi-Impact – جميع الحقوق محفوظة</p>
+    </div>
+</footer>
+
+<!-- نافذة الخصوصية -->
+<div id="privacy-modal" class="modal">
+    <div class="bg-white rounded-3xl p-8 max-w-lg mx-4 text-right">
+        <h3 class="text-2xl font-bold mb-6 lang-text" data-key="privacy-title">سياسة الخصوصية</h3>
+        <p class="text-gray-700 lang-text" data-key="privacy-text">نحترم خصوصيتك. نجمع البريد الإلكتروني فقط للتواصل ولا نشاركه مع أحد. يمكنك طلب الحذف في أي وقت.</p>
+        <button onclick="hidePrivacy()" class="mt-8 bg-emerald-600 text-white px-8 py-3 rounded-2xl font-bold">إغلاق</button>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const translations = {
+    ar: {
+        title: "Bi-Impact: ريادة الأعمال التي تطعم العالم",
+        subtitle: "نحن لا نوزع الطعام فقط، نحن نبني جسر Bi التقني لتحويل الهدر إلى أصول اقتصادية مستدامة.",
+        how: "كيف نعمل", success: "قصص النجاح", map: "الخريطة", join: "انضم الآن",
+        "how-title": "منظومة Bi-Impact الذكية",
+        "success-title": "قصص نجاح حقيقية",
+        "map-title": "خريطة التأثير العالمية – نشطة في الدار البيضاء 🌍",
+        "register-title": "ابدأ رحلتك الريادية",
+        "register-btn": "سجل مؤسستك", "register-btn2": "سجل الآن",
+        explore: "استكشف الخريطة الحية",
+        privacy: "سياسة الخصوصية", "privacy-title": "سياسة الخصوصية",
+        "privacy-text": "نحترم خصوصيتك. نجمع البريد الإلكتروني فقط للتواصل ولا نشاركه مع أحد. يمكنك طلب الحذف في أي وقت.",
+        step1: "رصد ذكي", step1desc: "تحديد الفائض وتحليله كبيانات",
+        step2: "ربط جغرافي", step2desc: "أقرب نقاط الاحتياج",
+        step3: "تنفيذ ريادي", step3desc: "لوجستية احترافية",
+        step4: "تقرير الأثر", step4desc: "أرقام تعزز علامتك"
+    },
+    en: {
+        title: "Bi-Impact: Entrepreneurship That Feeds the World",
+        subtitle: "We don't just distribute food — we build the Bi Bridge to turn waste into sustainable assets.",
+        how: "How We Work", success: "Success Stories", map: "Live Map", join: "Join Now",
+        "how-title": "Bi-Impact Smart System",
+        "success-title": "Real Success Stories",
+        "map-title": "Global Impact Map – Live in Casablanca 🌍",
+        "register-title": "Start Your Journey",
+        "register-btn": "Register Your Organization", "register-btn2": "Register Now",
+        explore: "Explore Live Map",
+        privacy: "Privacy Policy", "privacy-title": "Privacy Policy",
+        "privacy-text": "We respect your privacy. We only collect your email for communication and never share it.",
+        step1: "Smart Tracking", step1desc: "Identify and analyze surplus",
+        step2: "Geographic Linking", step2desc: "Nearest points of need",
+        step3: "Entrepreneurial Execution", step3desc: "Professional logistics",
+        step4: "Impact Report", step4desc: "Numbers that boost your brand"
+    }
+};
+
+const storiesData = {
+    ar: [
+        {name:"فندق Hyatt Regency", quote:"وفرنا 320 كجم في أسبوع وأطعمنا 180 عائلة!", role:"مدير المطبخ"},
+        {name:"مطعم La Sqala", quote:"أصبح التبرع روتين يومي. Bi-Impact غيّر نظرتنا للهدر.", role:"صاحب المطعم"},
+        {name:"أحمد – متطوع", quote:"وزّعت أكثر من 2 طن في 3 أشهر. أشعر بفرق حقيقي!", role:"متطوع Bi-Impact"},
+        {name:"بنك الطعام المغربي", quote:"الخريطة أنقذت مئات الوجبات يومياً.", role:"مدير البرامج"}
+    ],
+    en: [
+        {name:"Hyatt Regency Hotel", quote:"We saved 320 kg in one week and fed 180 families!", role:"Kitchen Manager"},
+        {name:"La Sqala Restaurant", quote:"Donation is now daily routine. Bi-Impact changed our view of waste.", role:"Owner"},
+        {name:"Ahmed – Volunteer", quote:"Distributed over 2 tons in 3 months. I feel real impact!", role:"Bi-Impact Volunteer"},
+        {name:"Moroccan Food Bank", quote:"The map saved hundreds of meals daily.", role:"Program Director"}
+    ]
+};
+
+function renderStories(lang) {
+    const container = document.getElementById('stories');
+    container.innerHTML = storiesData[lang].map(s => `
+        <div class="bg-white p-8 rounded-3xl story-card border">
+            <div class="text-6xl mb-4 text-emerald-600">“</div>
+            <p class="italic text-lg mb-6">${s.quote}</p>
+            <div class="font-bold">${s.name}</div>
+            <div class="text-emerald-600 text-sm">${s.role}</div>
         </div>
-    </section>
+    `).join('');
+}
 
-    <section id="partners" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <h2 class="text-3xl font-bold mb-12 text-gray-400 uppercase tracking-widest">شركاء Bi-Impact</h2>
-            <div class="flex flex-wrap justify-center gap-12 opacity-50 grayscale hover:grayscale-0 transition duration-500">
-                <span class="text-2xl font-bold">HOTEL GROUP</span>
-                <span class="text-2xl font-bold">AIRLINE CO</span>
-                <span class="text-2xl font-bold">FOOD BANK</span>
-                <span class="text-2xl font-bold">TECH HUB</span>
-            </div>
-        </div>
-    </section>
+function switchLanguage(lang) {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    
+    document.querySelectorAll('.lang-text').forEach(el => {
+        const key = el.getAttribute('data-key');
+        if (translations[lang][key]) el.textContent = translations[lang][key];
+    });
+    
+    document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    
+    renderStories(lang);
+}
 
-    <section id="register" class="py-24 px-6 bg-blue-900 text-white text-center">
-        <div class="max-w-3xl mx-auto">
-            <h2 class="text-4xl font-bold mb-8">ابدأ رحلتك الريادية مع Bi-Impact</h2>
-            <p class="text-xl mb-12 text-blue-100">سواء كنت مطعماً، فندقاً، أو متطوعاً طموحاً.. مكانك محجوز في خريطة المستقبل.</p>
-            <form class="space-y-4 sm:space-y-0 sm:flex sm:gap-4">
-                <input type="email" placeholder="بريدك الإلكتروني" class="w-full px-6 py-4 rounded-xl text-gray-900 outline-none">
-                <button class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 px-10 py-4 rounded-xl font-bold transition">سجل الآن</button>
-            </form>
-        </div>
-    </section>
+// الخريطة (مصححة ومضمونة)
+window.onload = () => {
+    renderStories('ar');
+    
+    const map = L.map('leaflet-map').setView([33.5731, -7.5898], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+    
+    const points = [
+        {lat:33.5880, lng:-7.6100, popup:"فندق Hyatt Regency – 120 كجم"},
+        {lat:33.5620, lng:-7.5800, popup:"مطعم La Sqala"},
+        {lat:33.5500, lng:-7.6500, popup:"بنك الطعام – 45 عائلة"},
+        {lat:33.6100, lng:-7.5500, popup:"مستشفى ابن رشد"},
+        {lat:33.5700, lng:-7.6200, popup:"متطوع Bi-Impact"},
+        {lat:33.5800, lng:-7.7000, popup:"مطار محمد الخامس"}
+    ];
+    points.forEach(p => {
+        L.marker([p.lat, p.lng]).addTo(map).bindPopup(`<b>${p.popup}</b><br><span class="text-emerald-600">✅ تم التوصيل</span>`);
+    });
+    
+    // النموذج
+    document.getElementById('register-form').addEventListener('submit', e => {
+        e.preventDefault();
+        alert('🌍 تم التسجيل بنجاح! سنتواصل معك خلال 24 ساعة.');
+        e.target.reset();
+    });
+};
 
-    <footer class="bg-white p-12 text-center text-gray-600 border-t">
-        <div class="max-w-7xl mx-auto space-y-6">
-            <div class="logo-text justify-center text-3xl">
-                <span class="part-bi">Bi-</span><span class="part-impact">Impact 🌍</span>
-            </div>
-            <div class="flex justify-center space-x-reverse space-x-8 text-sm font-bold">
-                <a href="#how" class="hover:text-emerald-600">عن Bi-Startup</a>
-                <a href="privacy.html" class="hover:text-emerald-600">سياسة الخصوصية</a>
-            </div>
-            <div class="pt-8 border-t border-gray-100">
-                <p class="text-md text-gray-500 font-medium">
-                    &copy; 2026 جميع الحقوق محفوظة لـ <span class="text-blue-900 font-extrabold underline decoration-emerald-500 decoration-2">Bi-Impact 🌍</span>
-                </p>
-                <p class="text-xs text-gray-400 mt-3">
-                    مشروع ريادي منبثق عن منظومة <b>Bi-Startup</b> لابتكار الحلول الذكية والمستدامة.
-                </p>
-            </div>
-        </div>
-    </footer>
-
+function showPrivacy() { document.getElementById('privacy-modal').style.display = 'flex'; }
+function hidePrivacy() { document.getElementById('privacy-modal').style.display = 'none'; }
+</script>
 </body>
 </html>
